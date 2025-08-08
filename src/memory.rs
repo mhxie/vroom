@@ -190,13 +190,18 @@ impl<T> Dma<T> {
             .open(path.clone())
         {
             Ok(f) => {
+                // Use MAP_HUGETLB on Linux for better performance, fallback to MAP_SHARED on macOS
+                #[cfg(target_os = "linux")]
+                let mmap_flags = libc::MAP_SHARED | libc::MAP_HUGETLB;
+                #[cfg(not(target_os = "linux"))]
+                let mmap_flags = libc::MAP_SHARED;
+
                 let ptr = unsafe {
                     libc::mmap(
                         ptr::null_mut(),
                         size,
                         libc::PROT_READ | libc::PROT_WRITE,
-                        libc::MAP_SHARED | libc::MAP_HUGETLB,
-                        // libc::MAP_SHARED,
+                        mmap_flags,
                         f.as_raw_fd(),
                         0,
                     )
