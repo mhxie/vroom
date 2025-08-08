@@ -108,13 +108,12 @@ impl NvmeCompQueue {
             if self.head == 0 {
                 self.phase = !self.phase;
             }
-            Some((self.head, entry.clone(), prev))
+            Some((self.head, *entry, prev))
         } else {
             None
         }
     }
 
-    ///
     #[inline(always)]
     pub fn complete_n(&mut self, commands: usize) -> (usize, NvmeCompletion, usize) {
         let prev = self.head;
